@@ -1,0 +1,25 @@
+{
+  "name": "WLED P4 Experimental (troyhacks)",
+  "version": "P4-experimental-custom",
+  "home_assistant_domain": "wled",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        {
+          "path": "firmware/bootloader.bin",
+          "offset": 4096
+        },
+        {
+          "path": "firmware/partitions.bin",
+          "offset": 32768
+        },
+        {
+          "path": "firmware/firmware.bin",
+          "offset": 65536
+        }
+      ]
+    }
+  ]
+}
