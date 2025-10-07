@@ -1,0 +1,62 @@
+name: Build WLED Firmware
+
+on:
+  workflow_dispatch:  # Manual trigger
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v3
+        with:
+          ref: gh-pages
+          
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          
+      - name: Install PlatformIO
+        run: |
+          pip install platformio
+          
+      - name: Clone WLED P4 Experimental
+        run: |
+          git clone -b P4_experimental https://github.com/troyhacks/WLED.git wled-source
+          
+      - name: Build Web Interface
+        run: |
+          cd wled-source
+          npm install
+          npm run build
+          
+      - name: Build Firmware
+        run: |
+          cd wled-source
+          pio run --environment esp32dev
+          
+      - name: Create firmware directory
+        run: mkdir -p firmware
+          
+      - name: Copy binaries
+        run: |
+          cp wled-source/.pio/build/esp32dev/firmware.bin firmware/
+          cp wled-source/.pio/build/esp32dev/bootloader.bin firmware/
+          cp wled-source/.pio/build/esp32dev/partitions.bin firmware/
+          
+      - name: Commit and push firmware
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add firmware/
+          git commit -m "Auto-build WLED P4 firmware $(date +%Y-%m-%d)" || echo "No changes"
+          git push
